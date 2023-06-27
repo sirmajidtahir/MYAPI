@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="Scripts/jquery-1.8.2.js"></script>
+    
+
+    <script>
+       
+       var employeelist=[];
+        var i=0;
+
+        function addrecord()
+        {
+            $("#addrecord").show();
+            $("#searchrecord").hide();
+        }
+
+        function clearrecord()
+        {
+            var c=confirm("are you sure you want to clear record");
+            if (c==true)
+            {
+            $("#name").val("");
+            $("#email").val("");
+            $("#pwd").val("");
+            }
+        }
+
+        function searchrecord()
+        {
+         
+            $("#addrecord").hide();
+            $("#searchrecord").show();
+        }
+
+        function search()
+        {
+         
+            $("#addrecord").hide();
+            $("#searchrecord").show();
+            
+            var stable=document.getElementById("stable");
+            
+            stable.innerHTML ="";
+            var names=$("#names").val();       
+            
+            var employee={"name": names};
+            var emp=JSON.stringify(employee); 
+
+            console.log(emp);
+           
+            //------------------start ajax for fetch data-----------------
+                $.ajax({
+                url: "http://localhost/PHPAPI2/getUserbyName.php",
+                contentType: "application/json", // php://input
+                dataType: "json",
+                data: {emp},
+                method: "GET"
+                   }).done(function (data, status) 
+                   {
+                     if (status == "success") 
+                      {
+                       if (data.length > 0) 
+                       {
+                          //For save data globally
+                          employeelist=data;
+                          //Display Data in Grid
+                         
+                          for (var i=0; i<data.length; i++)
+                          {
+                             stable.innerHTML +="<tr><td>"+data[i].customerName+"</td><td>"+data[i].email+"</td><td>"+data[i].pwd+"</td><td><input type='button' value='Edit/Delete' onclick='editrecord("+i+")''></td></tr>";
+                          }
+                        }
+                       else 
+                       {
+                        alert("No data exist");
+                       }
+                      }
+                     }).fail(function () 
+                       {
+                         alert("Authentication Error");
+                       });
+           
+        }
+
+        
+        function saverecord()
+        {
+            var c=confirm("are you sure you want to save this record");
+            if (c==true)
+            {
+               
+            $(".error").hide();
+
+            var name=$("#name").val();
+            var email=$("#email").val();
+            var pwd=$("#pwd").val();
+
+            
+            var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+            var pwdLength = /^.{4,10}$/;
+            var pwdUpper = /[A-Z]+/;
+            var pwdLower = /[a-z]+/;
+            var pwdNumber = /[0-9]+/;
+            var pwdSpecial = /[!@#$%^&()'[\]"?+-/*={}.,;:_]+/;
+
+            if (name=="")
+            {
+                alert("Name must be enetered");
+                $("#name").focus();
+                $("#namee").show();
+            }
+
+            else if (email=="")
+            {
+                alert("Email must be enetered");
+                $("#email").focus();
+                $("#emaile").show();
+            }
+
+            else if (!emailReg.test(email))
+            {
+                alert("Email must be in proper format");
+                $("#email").focus();
+                $("#emaile2").show();
+            }
+            else if (pwd=="")
+            {
+                alert("Password must be enetered");
+                $("#pwd").focus();
+                $("#pwde").show();
+            }
+            else if (!pwdLength.test(pwd))
+            {
+                alert("Password must be between 4-10 characters in length");
+                $("#pwd").focus();
+                $("#pwd1").show();
+            }
+           else if (!pwdUpper.test(pwd))
+            {
+                alert("Password must be Contain at least 1 uppercase letter");
+                $("#pwd").focus();
+                $("#pwd2").show();
+            }
+            else if (!pwdLower.test(pwd))
+            {
+                alert("Password must be Contain at least 1 lowercase letter");
+                $("#pwd").focus();
+                $("#pwd3").show();
+            }
+            else if (!pwdNumber.test(pwd))
+            {
+                alert("Password must be Contain Contain at least 1 number (0-9)");
+                $("#pwd").focus();
+                $("#pwd4").show();
+            }
+            else if (!pwdSpecial.test(pwd))
+            {
+                alert("Contain at least 1 special character (!@#$%^&()'[]?+-/*)");
+                $("#pwd").focus();
+                $("#pwd5").show();
+            } 
+            else
+            {
+                var employee={"name": name,"email": email,"pwd": pwd};
+                var emp=JSON.stringify(employee); 
+
+                console.log(emp);
+               
+                $.ajax({
+                url: "http://localhost/PHPAPI2/addUser.php",
+                contentType: "application/json", // php://input
+                dataType: "json",
+                data: {emp},
+                method: "POST"
+                      }).done(function (data, status) {
+                         if (status == "success") 
+                         {
+                            alert("Your Record has been saved");
+                            alert("Record save"+data);
+                            console.log(data);
+                            console.log(status);
+                            //getContacts();
+                            //$("#contactform").hide();
+                         }
+                       }).fail(function () 
+                          {
+                            alert("Record not save"+data);
+                           //$("#contactform").hide();
+                         });
+                 
+              
+            }
+
+            }
+        }
+        function editrecord(id)
+        {   
+            $("#editrecord").show();
+            $("#searchrecord").hide();
+            $(".error").hide();
+
+           $("#id").val(employeelist[id].customerNumber);
+           $("#name2").val(employeelist[id].customerName);
+           $("#email2").val(employeelist[id].email);
+           $("#pwd2").val(employeelist[id].pwd);
+
+        }
+
+        function updaterecord()
+        {
+            $(".error").hide();
+
+            var id=$("#id").val();
+            var name=$("#name2").val();
+            var email=$("#email2").val();
+            var pwd=$("#pwd2").val();
+
+        
+            var employee={"id": id,"name": name,"email": email,"pwd": pwd};    
+                
+            var emp=JSON.stringify(employee); 
+    
+            console.log(emp);
+                   
+                $.ajax({
+                    url: "http://localhost/PHPAPI2/updateUser.php",
+                    contentType: "application/json", // php://input
+                    dataType: "json",
+                    data: {emp},
+                    method: "POST"
+                          }).done(function (data, status) {
+                             if (status == "success") 
+                             {
+                                alert("Your record has been updated");
+    
+                                console.log(data);
+                                console.log(status);
+                                //getContacts();
+                                //$("#contactform").hide();
+                             }
+                           }).fail(function () 
+                              {
+                                alert("Record not save"+data);
+                               //$("#contactform").hide();
+                             });
+    
+           
+
+         
+        }
+
+        function deleterecord()
+        {
+            $(".error").hide();
+            var id=$("#id").val();
+           
+            var employee={"id": id};
+                
+            var emp=JSON.stringify(employee); 
+
+            console.log(emp);
+               
+            $.ajax({
+                url: "http://localhost/PHPAPI2/deleteUser.php",
+                contentType: "application/json", // php://input
+                dataType: "json",
+                data: {emp},
+                method: "POST"
+                      }).done(function (data, status) {
+                         if (status == "success") 
+                         {
+                            alert("Your record has been deleted");
+
+                            console.log(data);
+                            console.log(status);
+                            //getContacts();
+                            //$("#contactform").hide();
+                         }
+                       }).fail(function () 
+                          {
+                            alert("Record not save"+data);
+                           //$("#contactform").hide();
+                         });
+
+          
+        }
+
+        
+      
+
+        function init()
+        {
+            $(".error").hide();
+        }
+
+        window.onload=init;
+    </script>
+</head>
+<body>
+    <h1>Employee Information System</h1>
+
+    <input type="button" value="Add Record" onclick="addrecord()">
+    <input type="button" value="Search Record" onclick="searchrecord()">
+
+    <div id="addrecord" style="display:none;">
+          <span id="msg"></span>
+          <table>
+            <tr>
+                <td>Enter Name</td>
+                <td><input type="text" id="name"></td>
+                <td><span class="error" id="namee">Name must be entered</span></td>
+              
+            </tr>
+            <tr>
+                <td>Enter Email</td>
+                <td><input type="text" id="email"></td>
+                <td>
+                    <span class="error" id="emaile">Email must be enetered</span>
+                    <span class="error" id="emaile2">Email must be in proper format</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Enter Pwd</td>
+                <td><input type="password" id="pwd"></td>
+                <td>
+                    <span class="error" id="pwde">Password must be entered</span>
+                    <span class="error" id="pwd1">Be between 10-16 characters in length</span>
+                    <span class="error" id="pwd2">Contain at least 1 uppercase letter</span>
+                    <span class="error" id="pwd3">Contain at least 1 lowercase letter</span>
+                    <span class="error" id="pwd4">Contain at least 1 number (0-9)</span>
+                    <span class="error" id="pwd5">Contain at least 1 special character (!@#$%^&()'[]"?+-/*)</span>
+                </td>
+            </tr>
+            <tr>
+                <td><input type="button" value="Save" onclick="saverecord()"></td>
+                <td><input type="button" value="Clear" onclick="clearrecord()"></td>
+              
+            </tr>
+          </table>
+    </div>
+
+    <div id="editrecord" style="display:none;">
+        <span id="msg"></span>
+        <table>
+            <tr>
+                <td>ID</td>
+                <td><input type="text" id="id"></td>
+                <td></td>
+              
+            </tr>
+          <tr>
+              <td>Enter Name</td>
+              <td><input type="text" id="name2"></td>
+              <td><span class="error" id="namee2">Name must be entered</span></td>
+            
+          </tr>
+          <tr>
+              <td>Enter Email</td>
+              <td><input type="text" id="email2"></td>
+              <td>
+                  <span class="error" id="emaile3">Email must be enetered</span>
+                  <span class="error" id="emaile4">Email must be in proper format</span>
+              </td>
+          </tr>
+          <tr>
+              <td>Enter Pwd</td>
+              <td><input type="text" id="pwd2"></td>
+              <td>
+                  <span class="error" id="pwde1">Password must be entered</span>
+                  <span class="error" id="pwde2">Be between 10-16 characters in length</span>
+                  <span class="error" id="pwde3">Contain at least 1 uppercase letter</span>
+                  <span class="error" id="pwde4">Contain at least 1 lowercase letter</span>
+                  <span class="error" id="pwde5">Contain at least 1 number (0-9)</span>
+                  <span class="error" id="pwde6">Contain at least 1 special character (!@#$%^&()'[]"?+-/*)</span>
+              </td>
+          </tr>
+          <tr>
+              <td><input type="button" value="Update" onclick="updaterecord()"></td>
+              <td><input type="button" value="Delete" onclick="deleterecord()"></td>
+            
+          </tr>
+        </table>
+  </div>
+
+    <div id="searchrecord" style="display:none;">
+        <span id="msg2"></span>
+        <input type="text" id="names">
+        <input type="button" id="search" value="search" onclick="search()">
+        <table id="stable">
+            <tr>
+                <td>Name</td>
+                <td>Email</td>
+                <td>password</td>
+                <td>Edit/Delete</td>
+            </tr>
+           
+          
+        </table>
+
+    </div>
+</body>
+</html>
